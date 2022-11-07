@@ -1,8 +1,8 @@
-class List {
-  item: String;
+class List inherits A2I {
+  item: Object;
   next: List;
 
-  init(i: String, n: List): List {
+  init(i: Object, n: List): List {
     {
       item <- i;
       next <- n;
@@ -10,7 +10,7 @@ class List {
     }
   };
 
-  item(): String {
+  item(): Object {
     item
   };
 
@@ -19,21 +19,37 @@ class List {
   };
 
   flatten(): String {
-    if (isvoid next) then
-      item
-    else
-      item.concat(next.flatten())
-    fi
+    let str: String <-
+      case item of
+        i: Int => i2a(i);
+        s: String => s;
+        o: Object => { abort(); ""; };
+      esac
+    in {
+      if (isvoid next) then
+        str
+      else
+        str.concat(next.flatten())
+      fi;
+    }
   };
 
   flattenLoop(): String {
-    let res: String <- item,
+    let res: String <- "",
       pointer: List <- self
     in {
       while (not (isvoid pointer.next())) loop
         {
-          res <- res.concat(pointer.item());
-          pointer <- pointer.next();
+          let str: String <-
+            case pointer.item() of
+              i: Int => i2a(i);
+              s: String => s;
+              o: Object => { abort(); ""; };
+            esac
+          in {
+            res <- res.concat(str);
+            pointer <- pointer.next();
+          };
         }
       pool;
       res;
@@ -58,14 +74,17 @@ class Main inherits IO {
   helloWithList(): Object {
     let hello: String <- "Hello ",
       world: String <- "World",
+      i: Int <- 18,
       newline: String <- "\n",
       nil: List,
       list: List <- (new List).init(hello,
         (new List).init(world,
-          (new List).init(newline, nil)
+          (new List).init(i,
+            (new List).init(newline, nil)
+          )
         )
       )
     in 
-      out_string(list.flattenLoop())
+      out_string(list.flatten())
   };
 };
